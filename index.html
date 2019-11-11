@@ -1,0 +1,186 @@
+<html>
+<head>
+	<script src="words.js"></script>
+	<script src="words_freq.js"></script>
+	<style>
+	  textarea {
+	    width:500px;
+	    height:500px;
+	  }
+	</style>
+	<script>
+		String.prototype.replaceAll = function(search, replacement) {
+		    var target = this;
+		    return target.replace(new RegExp(search, 'g'), replacement);
+		};
+
+		var key_replacements = {
+			"q":"qp",
+			"w":"wo",
+			"e":"ei",
+			"r":"ru",
+			"t":"ty",
+			"a":"a'",
+			"s":"sl",
+			"d":"dk",
+			"f":"fj",
+			"g":"gh",
+			"z":"z.",
+			"x":"x,",
+			"c":"cm",
+			"v":"vn",
+			
+			"p":"qp",
+			"o":"wo",
+			"i":"ei",
+			"u":"ru",
+			"y":"ty",
+			"'":"a'",
+			"l":"sl",
+			"k":"dk",
+			"j":"fj",
+			"h":"gh",
+			".":"z.",
+			",":"x,",
+			"m":"cm",
+			"n":"vn"
+		}
+
+		window.onload = function () {
+			textbox.addEventListener('keydown', function (e) {
+				if (e.keyCode == 32) {
+				  split_text = textbox.value.split(" ");
+				  word_to_predict = split_text.pop();
+				  predicted_word = mapUpperCase(word_to_predict, predictWord(word_to_predict));
+				  if (predicted_word == "") {
+				    predicted_word = word_to_predict;
+				  }
+				  split_text.push(predicted_word);
+				  textbox.value = split_text.join(" ");
+				}
+				if (e.keyCode == 9) {
+				  e.preventDefault();
+				  e.stopImmediatePropagation();
+				  split_text = textbox.value.split(" ");
+				  split_text.pop();
+				  word_to_predict = split_text.pop();
+				  predicted_word = mapUpperCase(word_to_predict, predictWord(word_to_predict,word_to_predict));
+				  if (predicted_word == "") {
+				    predicted_word = word_to_predict;
+				  }
+				  split_text.push(predicted_word);
+				  textbox.value = split_text.join(" ") + " ";
+				}
+			});
+		}
+		
+		function predictWords(words) {
+		  words_split = words.split(" ");
+		  for (var i = 0; i < words_split.length; i++) {
+		    words_split[i] = predictWord(words_split[i])
+		  }
+		  return words_split.join(" ");
+		}
+		
+		function mapUpperCase(word1,word2) {
+		  out_word = "";
+		  if (word1.length != word2.length) {
+		    return out_word;
+		  }
+		  for (var i = 0; i < word1.length; i++) {
+		    if (word1[i] == word1[i].toUpperCase()) {
+		      out_word = out_word + word2[i].toUpperCase();
+		    } else {
+		      out_word = out_word + word2[i];
+		    }
+		  }
+		  console.log(word1 + word2)
+		  return out_word;
+		}
+		
+		function predictWord(word,oldWord) {
+		  if (word == "x")
+		    return ","
+		  if (word == "z")
+		    return "."
+		  
+		  out_regexp = "^"+word.toLowerCase()+"$";
+		  new_regexp = "";
+		  
+		  var keys = Object.keys(key_replacements)
+		  for (var i = 0; i < out_regexp.length; i++) {
+		    if (Object.keys(key_replacements).indexOf(out_regexp[i]) != -1) {
+  			  new_regexp = new_regexp + "[" + key_replacements[out_regexp[i]] + "]";
+		    } else {
+		      new_regexp = new_regexp + out_regexp[i];
+		    }
+		  }
+			
+			out_regexp = new_regexp
+			
+			console.log(out_regexp);
+			
+			regexp_obj = new RegExp(out_regexp);
+		  
+		  out_word = "";
+		  
+		  possible_words = [];
+		  
+		  for (var i = 0; i<words_freq.length; i++) {
+		    if (words_freq[i].toLowerCase().match(regexp_obj)) {
+		      possible_words.push(words_freq[i].toLowerCase());
+		    }
+		  }
+		  
+		  for (var i = 0; i<words.length; i++) {
+		    if (words[i].toLowerCase().match(regexp_obj) && possible_words.indexOf(words[i]) == -1) {
+		      possible_words.push(words[i].toLowerCase());
+		    }
+		  }
+		  
+		  console.log(possible_words)
+		  
+		  if (possible_words.length == 0) {
+		    if (word.substring(word.length,word.length-3) == "ees") {
+		      return predictWord(word.substring(0, word.length-3)) + "ies";
+		    }
+		    if (word.substring(word.length,word.length-3) == "evg") {
+		      return predictWord(word.substring(0, word.length-3)) + "ing";
+		    }
+		    if (word[word.length-1] == "x") {
+		      return predictWord(word.substring(0, word.length-1)) + ",";
+		    }
+		    if (word[word.length-1] == "z") {
+		      return predictWord(word.substring(0, word.length-1)) + ".";
+		    }
+		    if (word[word.length-1] == "s") {
+		      return predictWord(word.substring(0, word.length-1)) + "s";
+		    }
+		    if (word[word.length-1] == "c") {
+		      return predictWord(word.substring(0, word.length-1)) + "?";
+		    }
+		    return "";
+		  }
+		  
+		  if (oldWord === undefined) {
+		    return possible_words[0];
+		  } else {
+		    for (var i = 0; i < possible_words.length; i++) {
+		      if (possible_words[i] == oldWord) {
+		        if (i != possible_words.length-1) {
+		          return possible_words[i+1];
+		        } else {
+		          return possible_words[0];
+		        }
+		      }
+		    }
+		  }
+		}
+	</script>
+</head>
+<body>
+  <h1>Mirrorboard Autopredict</h1>
+  <h3>An implementation of the <a href="https://blog.xkcd.com/2007/08/14/mirrorboard-a-one-handed-keyboard-layout-for-the-lazy/">Mirrorboard</a> keyboard layout but with auto prediction rather than a compose key. Press tab to go to the next prediction.</h3>
+	<textarea id='textbox'></textarea>
+</body>
+</html>
