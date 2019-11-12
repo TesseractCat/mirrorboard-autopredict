@@ -20,7 +20,7 @@
 			"e":"ei",
 			"r":"ru",
 			"t":"ty",
-			"a":"a'",
+			"a":"a;",
 			"s":"sl",
 			"d":"dk",
 			"f":"fj",
@@ -43,34 +43,38 @@
 			".":"z.",
 			",":"x,",
 			"m":"cm",
-			"n":"vn"
+			"n":"vn",
+			";":"a;"
 		}
 
 		window.onload = function () {
-			textbox.addEventListener('keydown', function (e) {
-				if (e.keyCode == 32) {
-				  split_text = textbox.value.split(" ");
-				  word_to_predict = split_text.pop();
-				  predicted_word = mapUpperCase(word_to_predict, predictWord(word_to_predict));
-				  if (predicted_word == "") {
-				    predicted_word = word_to_predict;
-				  }
-				  split_text.push(predicted_word);
-				  textbox.value = split_text.join(" ");
-				}
-				if (e.keyCode == 9) {
-				  e.preventDefault();
-				  e.stopImmediatePropagation();
-				  split_text = textbox.value.split(" ");
-				  split_text.pop();
-				  word_to_predict = split_text.pop();
-				  predicted_word = mapUpperCase(word_to_predict, predictWord(word_to_predict,word_to_predict));
-				  if (predicted_word == "") {
-				    predicted_word = word_to_predict;
-				  }
-				  split_text.push(predicted_word);
-				  textbox.value = split_text.join(" ") + " ";
-				}
+			document.addEventListener('keydown', function (e) {
+			  textbox = document.activeElement;
+			  if (textbox.value != undefined) {
+  				if (e.keyCode == 32) {
+  				  split_text = textbox.value.split(" ");
+  				  word_to_predict = split_text.pop();
+  				  predicted_word = mapUpperCase(word_to_predict, predictWord(word_to_predict));
+  				  if (predicted_word == "") {
+  				    predicted_word = word_to_predict;
+  				  }
+  				  split_text.push(predicted_word);
+  				  textbox.value = split_text.join(" ");
+  				}
+  				if (e.keyCode == 9 || e.keyCode == 220) {
+  				  e.preventDefault();
+  				  e.stopImmediatePropagation();
+  				  split_text = textbox.value.split(" ");
+  				  split_text.pop();
+  				  word_to_predict = split_text.pop();
+  				  predicted_word = mapUpperCase(word_to_predict, predictWord(word_to_predict.toLowerCase(),word_to_predict.toLowerCase()));
+  				  if (predicted_word == "") {
+  				    predicted_word = word_to_predict;
+  				  }
+  				  split_text.push(predicted_word);
+  				  textbox.value = split_text.join(" ") + " ";
+  				}
+  			}
 			});
 		}
 		
@@ -88,13 +92,12 @@
 		    return out_word;
 		  }
 		  for (var i = 0; i < word1.length; i++) {
-		    if (word1[i] == word1[i].toUpperCase()) {
+		    if (word1[i] == word1[i].toUpperCase() && word1[i] != ";") {
 		      out_word = out_word + word2[i].toUpperCase();
 		    } else {
 		      out_word = out_word + word2[i];
 		    }
 		  }
-		  console.log(word1 + word2)
 		  return out_word;
 		}
 		
@@ -156,7 +159,7 @@
 		    if (word[word.length-1] == "s") {
 		      return predictWord(word.substring(0, word.length-1)) + "s";
 		    }
-		    if (word[word.length-1] == "c") {
+		    if (word[word.length-1] == "`") {
 		      return predictWord(word.substring(0, word.length-1)) + "?";
 		    }
 		    return "";
@@ -182,5 +185,6 @@
   <h1>Mirrorboard Autopredict</h1>
   <h3>An implementation of the <a href="https://blog.xkcd.com/2007/08/14/mirrorboard-a-one-handed-keyboard-layout-for-the-lazy/">Mirrorboard</a> keyboard layout but with auto prediction rather than a compose key. Press tab to go to the next prediction.</h3>
 	<textarea id='textbox'></textarea>
+	<input />
 </body>
 </html>
